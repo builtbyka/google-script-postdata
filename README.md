@@ -1,6 +1,6 @@
 # google-script-postdata
 
-// add link
+See it working at [kerrianneellis.co.uk/chartwithdatabase](http://kerrianneellis.co.uk/chartwithdatabase/)
 
 A google script app to post data to a Google spreadsheet. 
 
