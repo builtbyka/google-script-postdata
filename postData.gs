@@ -1,6 +1,7 @@
 var SCRIPT_PROP = PropertiesService.getScriptProperties(); // new property service
 
 function doPost(e){
+  var type = 'post';
   return handleResponse(e, type);
 }
  
@@ -12,6 +13,7 @@ function handleResponse(e, type) {
   try {
     var id = e.parameters.id; // get spreadsheet key from ajax call
     var sheetID = e.parameters.sheet; // get sheetname from ajax call
+    var reconVal = (e.parameters.recon !== undefined ? e.parameters.recon.toString() : 'Null');
     var doc = SpreadsheetApp.openById(id); // open the google spreadsheet
     var sheet = doc.getSheetByName(sheetID); // open the google sheet
     
@@ -30,15 +32,42 @@ function handleResponse(e, type) {
     var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]; // get the header values - this is important as it knows from this where to inject the data
     var rows = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
     var injectRow = '';
-    injectRow = sheet.getLastRow() + 1; // last populated row + 1
-      var row = [];
     
+    
+     if(reconVal !== 'Null'){
+        var col = headers.indexOf(reconVal); // get column index of recontribution value (in our example it is 'Value')
+        for(i=1;i<sheetData.length;i++) { 
+          if(sheetData[i][col] === e.parameter[headers[col]]) {  
+            injectRow = i+1; // the values will be injected in to the row
+            break;
+          }else{
+            injectRow = sheet.getLastRow() + 1;
+          } 
+        }
+      }else{
+        injectRow = sheet.getLastRow() + 1;
+      } 
+    
+    
+      var row = [];
       for (i in headers){
+        if(reconVal !== 'Null'){
+          if(e.parameter[headers[i]] !== undefined && headers[i] !== 'Value'){
+            var valCol = parseInt(i)+1;
+            var cell = sheet.getRange(injectRow, valCol);
+            var val = cell.getValue();
+            var add = parseInt(e.parameter[headers[i]]);
+            if(add === undefined){add = 1;};
+            var add1 = (val !== '' ? val+add : add);
+            var newVal = cell.setValue(add1);
+          }
+        }else{
           if(e.parameter[headers[i]] === undefined){
             row.push(''); 
           }else{
               row.push(e.parameter[headers[i]]); //creates an array of values that match headers
           }
+        }
       } 
       
       sheet.getRange(injectRow, 1, 1, row.length).setValues([row]) // set the values of the first available row with the array
@@ -48,7 +77,9 @@ function handleResponse(e, type) {
       .createTextOutput(JSON.stringify({"result":"success", "row": injectRow}))
       .setMimeType(ContentService.MimeType.JSON);
     
-    } catch(e){
+    } 
+  
+  catch(e){
       // if error return this
       return ContentService
       .createTextOutput(JSON.stringify({"result":"error", "error": e}))
