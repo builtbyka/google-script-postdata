@@ -1,7 +1,5 @@
 # google-script-postdata
 
-See it working at [kerrianneellis.co.uk/chartwithdatabase](http://kerrianneellis.co.uk/chartwithdatabase/)
-
 A google script app to post data to a Google spreadsheet. 
 
 include 'id' (spreadsheet key) and 'sheet' (name of sheet) and any headers you want to populate to post data
